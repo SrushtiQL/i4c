@@ -1,0 +1,709 @@
+<mvc:View
+    controllerName="fiori.ingredient.controller.ObjectPage"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:fb="sap.f"
+    xmlns:core="sap.ui.core"
+    xmlns:layout="sap.ui.layout"
+    displayBlock="true">
+    <fb:ShellBar
+        id="shellBar"
+        title="Manage Recipes"
+        homeIcon="images/sap-logo.png"
+        showMenuButton="false"
+        showNavButton="true"
+        navButtonPressed=".onNavBack"
+        showCopilot="false"
+        showSearch="false"
+        showNotifications="false"
+        showProductSwitcher="false" />
+    
+    <!-- Flexible Column Layout -->
+    <fb:FlexibleColumnLayout
+        id="fcl"
+        backgroundDesign="Solid">
+        
+        <!-- Begin Column (Recipe List) -->
+        <fb:beginColumnPages>
+            <Page
+                id="beginPage"
+                showHeader="false">
+                <content>
+                    <VBox class="sapUiSmallMargin">
+                        <HBox justifyContent="SpaceBetween" class="sapUiSmallMarginBottom">
+                            <Title text="Recipes (3)" />
+                            <HBox>
+                                <Button
+                                    text="Create"
+                                    type="Emphasized"
+                                    press=".onCreateRecipe"
+                                    class="sapUiTinyMarginEnd" />
+                                <Button
+                                    text="Copy"
+                                    press=".onCopyRecipe"
+                                    class="sapUiTinyMarginEnd" />
+                                <Button
+                                    text="Delete"
+                                    press=".onDeleteRecipe"
+                                    class="sapUiTinyMarginEnd" />
+                                <Button
+                                    icon="sap-icon://table-view"
+                                    type="Transparent"
+                                    tooltip="Table Settings" />
+                                <Button
+                                    icon="sap-icon://sort"
+                                    type="Transparent"
+                                    tooltip="Sort" />
+                                <Button
+                                    icon="sap-icon://filter"
+                                    type="Transparent"
+                                    tooltip="Filter" />
+                            </HBox>
+                        </HBox>
+                        
+                        <!-- Recipe List -->
+                        <List
+                            id="recipeList"
+                            mode="SingleSelectMaster"
+                            items="{/recipes}"
+                            selectionChange=".onRecipeListSelect">
+                            <items>
+                                <StandardListItem
+                                    title="{name}"
+                                    description="Recipe Type: {recipeType}"
+                                    info="{alternative}"
+                                    type="Active"
+                                    press=".onRecipeItemPress">
+                                    <customData>
+                                        <core:CustomData key="recipe" value="{}" />
+                                    </customData>
+                                </StandardListItem>
+                            </items>
+                        </List>
+                    </VBox>
+                </content>
+            </Page>
+        </fb:beginColumnPages>
+        
+        <!-- Mid Column (Recipe Details) -->
+        <fb:midColumnPages>
+            <Page
+                id="midPage"
+                showHeader="false">
+                <content>
+                    <VBox>
+                        <!-- Recipe Header -->
+                        <VBox class="sapUiSmallMargin">
+                            <HBox justifyContent="SpaceBetween" class="sapUiSmallMarginBottom">
+                                <VBox>
+                                    <Title text="{/currentRecipe/name}" level="H2" />
+                                    <Text text="{/currentRecipe/id}" class="sapUiTinyMarginTop" />
+                                </VBox>
+                                <HBox>
+                                    <Button
+                                        text="Delete"
+                                        press=".onDeleteRecipe"
+                                        class="sapUiTinyMarginEnd" />
+                                    <Button
+                                        text="Transfer to Primary Output"
+                                        press=".onTransferToOutput"
+                                        class="sapUiTinyMarginEnd" />
+                                    <Button
+                                        text="Copy"
+                                        press=".onCopyRecipe"
+                                        class="sapUiTinyMarginEnd" />
+                                    <Button
+                                        text="New Alternative"
+                                        press=".onNewAlternative"
+                                        class="sapUiTinyMarginEnd" />
+                                    <Button
+                                        text="New Version"
+                                        press=".onNewVersion"
+                                        class="sapUiTinyMarginEnd" />
+                                    <Button
+                                        icon="sap-icon://action"
+                                        type="Transparent" />
+                                    <Button
+                                        icon="sap-icon://full-screen"
+                                        type="Transparent"
+                                        press=".onFullScreen" />
+                                    <Button
+                                        icon="sap-icon://decline"
+                                        type="Transparent"
+                                        press=".onCloseDetail" />
+                                </HBox>
+                            </HBox>
+                            
+                            <!-- Recipe Image and Quick Info -->
+                            <HBox class="sapUiSmallMarginBottom">
+                                <VBox class="sapUiMediumMarginEnd">
+                                    <core:Icon
+                                        src="sap-icon://product"
+                                        size="5rem"
+                                        color="#0854A0" />
+                                </VBox>
+                                <VBox>
+                                    <Label text="Recipe Type:" />
+                                    <Text text="{/currentRecipe/recipeType}" class="sapUiTinyMarginBottom" />
+                                    <Label text="Alternative:" />
+                                    <Text text="{/currentRecipe/alternative}" class="sapUiTinyMarginBottom" />
+                                    <Label text="Primary Output Specification:" />
+                                    <Link text="{/currentRecipe/primaryOutput}" class="sapUiTinyMarginBottom" />
+                                </VBox>
+                                <VBox class="sapUiMediumMarginBegin">
+                                    <Label text="Status:" />
+                                    <ObjectStatus
+                                        text="{/currentRecipe/status}"
+                                        state="{/currentRecipe/statusState}"
+                                        class="sapUiTinyMarginBottom" />
+                                    <Label text="Version:" />
+                                    <Text text="{/currentRecipe/version}" class="sapUiTinyMarginBottom" />
+                                    <Label text="Product:" />
+                                    <Text text="{/currentRecipe/product}" />
+                                </VBox>
+                            </HBox>
+                        </VBox>
+                        
+                        <!-- Icon Tab Bar -->
+                        <IconTabBar
+                            id="iconTabBar"
+                            select=".onTabSelect"
+                            class="sapUiResponsiveContentPadding">
+                            <items>
+                                <IconTabFilter
+                                    key="general"
+                                    text="General"
+                                    icon="sap-icon://hint">
+                                    <VBox class="sapUiSmallMargin">
+                                        <!-- Basic Information -->
+                                        <Panel
+                                            headerText="Basic Information"
+                                            class="sapUiSmallMarginBottom"
+                                            expandable="false">
+                                            <content>
+                                                <f:SimpleForm
+                                                    editable="false"
+                                                    layout="ResponsiveGridLayout"
+                                                    labelSpanXL="4"
+                                                    labelSpanL="4"
+                                                    labelSpanM="12"
+                                                    labelSpanS="12"
+                                                    emptySpanXL="0"
+                                                    emptySpanL="0"
+                                                    emptySpanM="0"
+                                                    emptySpanS="0"
+                                                    columnsXL="2"
+                                                    columnsL="2"
+                                                    columnsM="1">
+                                                    <f:content>
+                                                        <Label text="Name:" />
+                                                        <Text text="{/currentRecipe/name}" />
+                                                        
+                                                        <Label text="Status:" />
+                                                        <ObjectStatus
+                                                            text="{/currentRecipe/status}"
+                                                            state="{/currentRecipe/statusState}" />
+                                                        
+                                                        <Label text="ID:" />
+                                                        <Text text="{/currentRecipe/id}" />
+                                                        
+                                                        <Label text="Primary Output Specification:" />
+                                                        <Link text="{/currentRecipe/primaryOutput}" />
+                                                        
+                                                        <Label text="Recipe Type:" />
+                                                        <Text text="{/currentRecipe/recipeType}" />
+                                                        
+                                                        <Label text="Product:" />
+                                                        <Text text="{/currentRecipe/product}" />
+                                                        
+                                                        <Label text="Alternative:" />
+                                                        <Text text="{/currentRecipe/alternative}" />
+                                                        
+                                                        <Label text="Version:" />
+                                                        <Text text="{/currentRecipe/version}" />
+                                                    </f:content>
+                                                </f:SimpleForm>
+                                            </content>
+                                        </Panel>
+                                        
+                                        <!-- Notes -->
+                                        <Panel
+                                            headerText="Notes"
+                                            class="sapUiSmallMarginBottom"
+                                            expandable="false">
+                                            <content>
+                                                <TextArea
+                                                    value="{/currentRecipe/notes}"
+                                                    rows="4"
+                                                    width="100%"
+                                                    editable="false"
+                                                    placeholder="–" />
+                                            </content>
+                                        </Panel>
+                                        
+                                        <!-- Administration -->
+                                        <Panel
+                                            headerText="Administration"
+                                            expandable="false">
+                                            <content>
+                                                <f:SimpleForm
+                                                    editable="false"
+                                                    layout="ResponsiveGridLayout"
+                                                    columnsXL="2"
+                                                    columnsL="2"
+                                                    columnsM="1">
+                                                    <f:content>
+                                                        <Label text="Created By:" />
+                                                        <Text text="write.tester@frm.sap.com" />
+                                                        
+                                                        <Label text="Changed By:" />
+                                                        <Text text="write.tester@frm.sap.com" />
+                                                        
+                                                        <Label text="Created On:" />
+                                                        <Text text="Apr 4, 2024, 12:47:14 PM" />
+                                                        
+                                                        <Label text="Changed On:" />
+                                                        <Text text="Apr 4, 2024, 12:57:04 PM" />
+                                                    </f:content>
+                                                </f:SimpleForm>
+                                            </content>
+                                        </Panel>
+                                    </VBox>
+                                </IconTabFilter>
+                                
+                                <IconTabFilter
+                                    key="formulation"
+                                    text="Formulate with Alternative"
+                                    icon="sap-icon://nutrition-activity">
+                                    <VBox class="sapUiSmallMargin">
+                                        <!-- Panel 1: Formulate with Alternative -->
+                                        <Panel
+                                            headerText="Formulate with Alternative"
+                                            class="sapUiSmallMarginBottom"
+                                            expandable="false">
+                                            <content>
+                                                <VBox>
+                                                    <!-- Country Selection and Formulate Buttons -->
+                                                    <HBox justifyContent="Center" alignItems="Center" class="sapUiSmallMarginBottom">
+                                            <Label text="Country:" class="sapUiTinyMarginEnd" />
+                                            <ComboBox
+                                                id="countryComboBox"
+                                                placeholder="Select Country (type to search)"
+                                                selectedKey="{/selectedCountryId}"
+                                                width="250px"
+                                                selectionChange=".onCountryChange"
+                                                items="{
+                                                    path: '/countries',
+                                                    sorter: {
+                                                        path: 'name'
+                                                    }
+                                                }"
+                                                showSecondaryValues="true"
+                                                filterSecondaryValues="true"
+                                                class="sapUiTinyMarginEnd">
+                                                <core:Item key="{id}" text="{name}" />
+                                            </ComboBox>
+                                            <Button
+                                                text="Formulate with Alternative"
+                                                type="Emphasized"
+                                                icon="sap-icon://refresh"
+                                                press=".onFormulateAlternative"
+                                                enabled="{= ${/selectedIngredients}.length > 0 &amp;&amp; ${/selectedCountryId} !== '' }"
+                                                class="sapUiTinyMarginEnd" />
+                                            <Button
+                                                text="Formulate Entire Recipe"
+                                                type="Default"
+                                                icon="sap-icon://multi-select"
+                                                press=".onFormulateEntireRecipe"
+                                                enabled="{= ${/selectedCountryId} !== '' }" />
+                                        </HBox>
+                                        
+                                        <!-- Ingredient Comparison Table (7 Columns) -->
+                                        <Table
+                                            id="ingredientsComparisonTable"
+                                            mode="MultiSelect"
+                                            items="{/comparisonIngredients}"
+                                            selectionChange=".onIngredientSelectionChange">
+                                            <columns>
+                                                <!-- Current Ingredient -->
+                                                <Column width="25%" hAlign="Begin">
+                                                    <Text text="Current Ingredient" />
+                                                </Column>
+                                                <Column width="10%" hAlign="Center">
+                                                    <Text text="Qty" />
+                                                </Column>
+                                                <Column width="8%" hAlign="Center">
+                                                    <Text text="Unit" />
+                                                </Column>
+                                                
+                                                <!-- Alternative Ingredient -->
+                                                <Column width="25%" hAlign="Begin">
+                                                    <Text text="Alternative Ingredient" />
+                                                </Column>
+                                                <Column width="10%" hAlign="Center">
+                                                    <Text text="Qty" />
+                                                </Column>
+                                                <Column width="8%" hAlign="Center">
+                                                    <Text text="Unit" />
+                                                </Column>
+                                                
+                                                <!-- Status column -->
+                                                <Column width="14%" hAlign="Center">
+                                                    <Text text="Status" />
+                                                </Column>
+                                            </columns>
+                                            <items>
+                                                <ColumnListItem type="Active" press=".onIngredientRowPress">
+                                                    <cells>
+                                                        <!-- Current ingredient -->
+                                                        <Text text="{currentIngredient}" />
+                                                        <Text text="{currentQty}" />
+                                                        <Text text="{currentUnit}" />
+                                                        
+                                                        <!-- Alternative ingredient -->
+                                                        <Text text="{alternativeIngredient}" />
+                                                        <Text text="{alternativeQty}" />
+                                                        <Text text="{alternativeUnit}" />
+                                                        
+                                                        <!-- Status -->
+                                                        <ObjectStatus
+                                                            text="{status}"
+                                                            state="{statusState}"
+                                                            inverted="true" />
+                                                    </cells>
+                                                </ColumnListItem>
+                                            </items>
+                                                        </Table>
+                                                        
+                                                        <!-- Add Recipe Button -->
+                                                        <HBox justifyContent="Center" class="sapUiMediumMarginTop">
+                                                            <Button
+                                                                text="Add Recipe"
+                                                                type="Success"
+                                                                icon="sap-icon://add"
+                                                                press=".onAddRecipeWithAlternatives"
+                                                                enabled="{/allIngredientsApproved}" />
+                                                        </HBox>
+                                                    </VBox>
+                                            </content>
+                                        </Panel>
+                                        
+                                        <!-- Panel 2: Label Creation -->
+                                        <Panel
+                                            headerText="Label Creation"
+                                            expandable="false">
+                                            <content>
+                                                <VBox class="sapUiSmallMargin">
+                                                    
+                                                    <!-- Language Selection (Always visible at top) -->
+                                                    <HBox 
+                                                        justifyContent="Center" 
+                                                        alignItems="Center"
+                                                        class="sapUiSmallMarginBottom">
+                                                        <Label 
+                                                            text="Translation Language:" 
+                                                            class="sapUiTinyMarginEnd" />
+                                                        <ComboBox
+                                                            id="translateLanguageComboBox"
+                                                            placeholder="Select Language"
+                                                            selectedKey="{/selectedTranslateLanguage}"
+                                                            items="{/availableLanguages}"
+                                                            width="200px"
+                                                            enabled="{= ${/labelData} !== null &amp;&amp; ${/labelData/success} === true }">
+                                                            <core:Item key="{}" text="{}" />
+                                                        </ComboBox>
+                                                    </HBox>
+                                                    
+                                                    <!-- Action Buttons (Clean single row) -->
+                                                    <HBox 
+                                                        justifyContent="Center" 
+                                                        alignItems="Center"
+                                                        class="sapUiMediumMarginBottom">
+                                                        <Button
+                                                            text="Generate Label"
+                                                            type="Emphasized"
+                                                            icon="sap-icon://document-text"
+                                                            press=".onGenerateLabel"
+                                                            width="250px"
+                                                            class="sapUiSmallMarginEnd" />
+                                                        <Button
+                                                            text="Translate Label"
+                                                            icon="sap-icon://globe"
+                                                            press=".onTranslateLabel"
+                                                            enabled="{= ${/labelData} !== null &amp;&amp; ${/labelData/success} === true &amp;&amp; ${/selectedTranslateLanguage} !== '' }"
+                                                            width="250px" />
+                                                    </HBox>
+                                                    
+                                                    <!-- Loading Indicators -->
+                                                    <HBox justifyContent="Center" class="sapUiSmallMarginBottom">
+                                                        <BusyIndicator
+                                                            visible="{/generatingLabel}"
+                                                            text="Generating label..."
+                                                            class="sapUiMediumMarginEnd" />
+                                                        <BusyIndicator
+                                                            visible="{/translating}"
+                                                            text="Translating label..." />
+                                                    </HBox>
+                                                    
+                                                    <!-- Images Row (Side by Side) -->
+                                                    <HBox 
+                                                        justifyContent="Center" 
+                                                        wrap="NoWrap" 
+                                                        class="sapUiMediumMarginBottom">
+                                                        
+                                                        <!-- Left: English Label -->
+                                                        <VBox 
+                                                            alignItems="Center"
+                                                            visible="{= ${/generatedLabelUrl} !== '' }"
+                                                            class="sapUiMediumMarginEnd">
+                                                            <Label 
+                                                                text="English Label" 
+                                                                design="Bold" 
+                                                                class="sapUiSmallMarginBottom" />
+                                                            <Image
+                                                                src="{/generatedLabelUrl}"
+                                                                width="400px"
+                                                                alt="English Label"
+                                                                class="sapUiSmallMarginBottom" />
+                                                            <Button
+                                                                text="Download English Label"
+                                                                icon="sap-icon://download"
+                                                                type="Default"
+                                                                press=".onDownloadEnglishLabel" />
+                                                        </VBox>
+                                                        
+                                                        <!-- Right: Translated Label -->
+                                                        <VBox 
+                                                            alignItems="Center"
+                                                            visible="{= ${/translatedLabelUrl} !== '' }">
+                                                            <Label 
+                                                                text="{= ${/translatedLanguage} + ' Label' }" 
+                                                                design="Bold" 
+                                                                class="sapUiSmallMarginBottom" />
+                                                            <Image
+                                                                src="{/translatedLabelUrl}"
+                                                                width="400px"
+                                                                alt="Translated Label"
+                                                                class="sapUiSmallMarginBottom" />
+                                                            <Button
+                                                                text="{= 'Download ' + ${/translatedLanguage} + ' Label' }"
+                                                                icon="sap-icon://download"
+                                                                type="Default"
+                                                                press=".onDownloadTranslatedLabel" />
+                                                        </VBox>
+                                                    </HBox>
+                                                    
+                                                    <!-- AI Analysis Results - Only show after successful generation -->
+                                                    <VBox visible="{= ${/labelData} !== null &amp;&amp; ${/labelData/success} === true }" width="100%" class="sapUiSmallMargin">
+                                                        
+                                                        <!-- Ingredients (First - like real food labels) -->
+                                                        <Panel headerText="Ingredients" class="sapUiSmallMarginBottom">
+                                                            <VBox class="sapUiSmallMargin">
+                                                                <Text 
+                                                                    text="{= 'INGREDIENTS: ' + ${/labelData/ingredients}.join(', ') + '.' }"
+                                                                    wrapping="true" />
+                                                            </VBox>
+                                                        </Panel>
+                                                        
+                                                        <!-- Marketing Tagline -->
+                                                        <Panel headerText="Marketing Tagline" class="sapUiSmallMarginBottom">
+                                                            <VBox alignItems="Center" class="sapUiSmallMargin">
+                                                                <Title text="{/labelData/marketing_tagline}" level="H3" textAlign="Center" />
+                                                            </VBox>
+                                                        </Panel>
+                                                        
+                                                        <!-- Allergen Information -->
+                                                        <Panel headerText="Allergen Information" class="sapUiSmallMarginBottom">
+                                                            <VBox class="sapUiSmallMargin">
+                                                                <Label text="Contains:" class="sapUiTinyMarginBottom" />
+                                                                <HBox wrap="Wrap">
+                                                                    <Text text="{= ${/labelData/allergens/contains}.length > 0 ? ${/labelData/allergens/contains}.join(', ') : 'None' }" />
+                                                                </HBox>
+                                                                
+                                                                <Label text="May Contain:" class="sapUiSmallMarginTop sapUiTinyMarginBottom" />
+                                                                <HBox wrap="Wrap">
+                                                                    <Text text="{= ${/labelData/allergens/may_contain}.length > 0 ? ${/labelData/allergens/may_contain}.join(', ') : 'None' }" />
+                                                                </HBox>
+                                                                
+                                                                <Label text="Allergen Free:" class="sapUiSmallMarginTop sapUiTinyMarginBottom" />
+                                                                <HBox wrap="Wrap">
+                                                                    <Text text="{= ${/labelData/allergens/allergen_free}.join(', ') }" />
+                                                                </HBox>
+                                                            </VBox>
+                                                        </Panel>
+                                                        
+                                                        <!-- Nutrition Facts -->
+                                                        <Panel headerText="Nutrition Facts" class="sapUiSmallMarginBottom">
+                                                            <f:SimpleForm layout="ResponsiveGridLayout" editable="false" class="sapUiSmallMargin">
+                                                                <f:content>
+                                                                    <Label text="Serving Size:" />
+                                                                    <Text text="{/labelData/nutrition/serving_size}" />
+                                                                    
+                                                                    <Label text="Calories:" />
+                                                                    <Text text="{/labelData/nutrition/calories}" />
+                                                                    
+                                                                    <Label text="Total Fat:" />
+                                                                    <Text text="{/labelData/nutrition/total_fat}" />
+                                                                    
+                                                                    <Label text="Saturated Fat:" />
+                                                                    <Text text="{/labelData/nutrition/saturated_fat}" />
+                                                                    
+                                                                    <Label text="Cholesterol:" />
+                                                                    <Text text="{/labelData/nutrition/cholesterol}" />
+                                                                    
+                                                                    <Label text="Sodium:" />
+                                                                    <Text text="{/labelData/nutrition/sodium}" />
+                                                                    
+                                                                    <Label text="Carbohydrates:" />
+                                                                    <Text text="{/labelData/nutrition/carbohydrates}" />
+                                                                    
+                                                                    <Label text="Protein:" />
+                                                                    <Text text="{/labelData/nutrition/protein}" />
+                                                                </f:content>
+                                                            </f:SimpleForm>
+                                                        </Panel>
+                                                        
+                                                        <!-- Health Analysis -->
+                                                        <Panel headerText="Health Analysis" class="sapUiSmallMarginBottom">
+                                                            <VBox class="sapUiSmallMargin">
+                                                                <HBox class="sapUiTinyMarginBottom">
+                                                                    <Label text="Health Score:" class="sapUiTinyMarginEnd" />
+                                                                    <Text text="{/labelData/health_analysis/score}" />
+                                                                    <Text text=" / 10" />
+                                                                </HBox>
+                                                                
+                                                                <Label text="Summary:" class="sapUiTinyMarginTop sapUiTinyMarginBottom" />
+                                                                <Text text="{/labelData/health_analysis/summary}" wrapping="true" class="sapUiTinyMarginBottom" />
+                                                                
+                                                                <Label text="Warnings:" class="sapUiSmallMarginTop sapUiTinyMarginBottom" />
+                                                                <VBox>
+                                                                    <Text text="{= ${/labelData/health_analysis/warnings}.length > 0 ? ${/labelData/health_analysis/warnings}.join(', ') : 'None' }" wrapping="true" />
+                                                                </VBox>
+                                                            </VBox>
+                                                        </Panel>
+                                                    </VBox>
+                                                </VBox>
+                                            </content>
+                                        </Panel>
+                                    </VBox>
+                                </IconTabFilter>
+                                
+                                <IconTabFilter
+                                    key="formula"
+                                    text="Formula"
+                                    icon="sap-icon://chain-link">
+                                    <VBox class="sapUiSmallMargin">
+                                        <Text text="Formula details would be displayed here" />
+                                    </VBox>
+                                </IconTabFilter>
+                                
+                                <IconTabFilter
+                                    key="calculations"
+                                    text="Calculations"
+                                    icon="sap-icon://manager-insight">
+                                    <VBox class="sapUiSmallMargin">
+                                        <Text text="Calculation details would be displayed here" />
+                                    </VBox>
+                                </IconTabFilter>
+                                
+                                <IconTabFilter
+                                    key="documents"
+                                    text="Documents"
+                                    icon="sap-icon://document">
+                                    <VBox class="sapUiSmallMargin">
+                                        <!-- Documents Warning -->
+                                        <MessageStrip
+                                            text="Documents are visible in all the versions of the recipe."
+                                            type="Warning"
+                                            showIcon="true"
+                                            class="sapUiSmallMarginBottom" />
+                                        
+                                        <!-- Document ID and Actions -->
+                                        <HBox justifyContent="SpaceBetween" class="sapUiSmallMarginBottom">
+                                            <VBox>
+                                                <Text text="47-001" class="sapUiSmallMarginBottom" />
+                                                <HBox>
+                                                    <Label text="Standard" class="sapUiTinyMarginEnd" />
+                                                    <Text text="Items (4)" />
+                                                </HBox>
+                                            </VBox>
+                                            <HBox>
+                                                <SearchField
+                                                    width="300px"
+                                                    placeholder="Search"
+                                                    class="sapUiTinyMarginEnd" />
+                                                <Button
+                                                    icon="sap-icon://attachment"
+                                                    type="Transparent" />
+                                                <Button
+                                                    text="Create"
+                                                    type="Emphasized"
+                                                    icon="sap-icon://add"
+                                                    press=".onCreateDocument"
+                                                    class="sapUiTinyMarginBegin" />
+                                                <Button
+                                                    text="Edit Link"
+                                                    press=".onEditLink"
+                                                    class="sapUiTinyMarginBegin" />
+                                                <Button
+                                                    text="Download"
+                                                    press=".onDownloadDocument"
+                                                    class="sapUiTinyMarginBegin" />
+                                                <Button
+                                                    text="Delete"
+                                                    press=".onDeleteDocument"
+                                                    class="sapUiTinyMarginBegin" />
+                                            </HBox>
+                                        </HBox>
+                                        
+                                        <!-- Documents Table -->
+                                        <Table
+                                            items="{/documents}"
+                                            mode="MultiSelect">
+                                            <columns>
+                                                <Column width="4rem">
+                                                    <Text text="Type" />
+                                                </Column>
+                                                <Column>
+                                                    <Text text="Name" />
+                                                </Column>
+                                                <Column>
+                                                    <Text text="Modified On" />
+                                                </Column>
+                                                <Column>
+                                                    <Text text="Created By" />
+                                                </Column>
+                                                <Column>
+                                                    <Text text="Modified By" />
+                                                </Column>
+                                                <Column width="8rem">
+                                                    <Text text="Size" />
+                                                </Column>
+                                            </columns>
+                                            <items>
+                                                <ColumnListItem>
+                                                    <cells>
+                                                        <core:Icon
+                                                            src="{icon}"
+                                                            size="2rem"
+                                                            color="{iconColor}" />
+                                                        <Link text="{name}" press=".onDocumentPress" />
+                                                        <Text text="{modifiedOn}" />
+                                                        <Text text="{createdBy}" />
+                                                        <Text text="{modifiedBy}" />
+                                                        <Text text="{size}" />
+                                                    </cells>
+                                                </ColumnListItem>
+                                            </items>
+                                        </Table>
+                                    </VBox>
+                                </IconTabFilter>
+                            </items>
+                        </IconTabBar>
+                    </VBox>
+                </content>
+            </Page>
+        </fb:midColumnPages>
+    </fb:FlexibleColumnLayout>
+</mvc:View>

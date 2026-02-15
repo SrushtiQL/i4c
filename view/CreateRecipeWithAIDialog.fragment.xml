@@ -1,0 +1,211 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns:f="sap.ui.layout.form">
+    
+    <Dialog
+        id="createRecipeWithAIDialog"
+        title="Create Recipe with AI"
+        contentWidth="950px"
+        contentHeight="auto"
+        resizable="true"
+        draggable="true">
+        <customHeader>
+            <Bar>
+                <contentLeft>
+                    <core:Icon src="sap-icon://sap-ui5" color="#0854A0" class="sapUiSmallMarginEnd" />
+                    <Title text="Create Recipe with AI" />
+                </contentLeft>
+            </Bar>
+        </customHeader>
+        <content>
+            <VBox class="sapUiSmallMargin">
+                
+                <!-- AI Banner -->
+                <MessageStrip
+                    text="AI will suggest ingredients with regional alternatives. Select an alternative from the dropdown to see its benefits."
+                    type="Information"
+                    showIcon="true"
+                    class="sapUiSmallMarginBottom" />
+                
+                <!-- Food Name -->
+                <VBox class="sapUiSmallMarginBottom">
+                    <Label text="Food Name:" required="true" />
+                    <Input
+                        id="aiFoodNameInput"
+                        placeholder="Enter food name (e.g., Butter Chicken, Caesar Salad, Pasta Carbonara)"
+                        value="{/aiRecipe/foodName}"
+                        required="true"
+                        width="100%"
+                        valueLiveChange=".onAIFoodNameChange" />
+                </VBox>
+                
+                <!-- Recipe ID (Auto-generated, read-only) -->
+                <VBox class="sapUiSmallMarginBottom">
+                    <Label text="Recipe ID:" />
+                    <Input
+                        id="aiRecipeIdInput"
+                        value="{/aiRecipe/recipeId}"
+                        enabled="false"
+                        width="100%" />
+                    <Text text="(Auto-generated)" class="sapUiTinyMarginTop" />
+                </VBox>
+                
+                <!-- Region Selection -->
+                <VBox class="sapUiSmallMarginBottom">
+                    <Label text="Country/Region:" required="true" />
+                    <ComboBox
+                        id="aiRegionComboBox"
+                        placeholder="Select Country (for regional alternatives)"
+                        selectedKey="{/aiRecipe/regionId}"
+                        items="{/countries}"
+                        width="100%"
+                        required="true"
+                        selectionChange=".onAIRegionChange">
+                        <core:Item key="{id}" text="{name}" />
+                    </ComboBox>
+                </VBox>
+                
+                <!-- Recipe Type (Optional) -->
+                <VBox class="sapUiSmallMarginBottom">
+                    <Label text="Recipe Type:" />
+                    <ComboBox
+                        id="aiRecipeTypeComboBox"
+                        selectedKey="{/aiRecipe/recipeType}"
+                        width="100%">
+                        <items>
+                            <core:Item key="Standard" text="Standard" />
+                            <core:Item key="Premium" text="Premium" />
+                            <core:Item key="Organic" text="Organic" />
+                            <core:Item key="Diet" text="Diet" />
+                        </items>
+                    </ComboBox>
+                </VBox>
+                
+                <!-- Generate Ingredients Button -->
+                <HBox justifyContent="Center" class="sapUiMediumMarginTop sapUiSmallMarginBottom">
+                    <Button
+                        text="Generate Ingredients with AI"
+                        type="Emphasized"
+                        icon="sap-icon://sap-ui5"
+                        press=".onGenerateIngredientsAI"
+                        enabled="{= ${/aiRecipe/foodName} !== '' &amp;&amp; ${/aiRecipe/regionId} !== '' }" />
+                </HBox>
+                
+                <!-- Loading Indicator -->
+                <HBox justifyContent="Center" class="sapUiSmallMarginBottom">
+                    <BusyIndicator
+                        visible="{/aiRecipe/generatingIngredients}"
+                        text="AI is analyzing the recipe and generating ingredients with alternatives..." />
+                </HBox>
+                
+                <!-- AI-Generated Ingredients Section -->
+                <Panel
+                    headerText="AI-Generated Ingredients with Alternatives"
+                    visible="{= ${/aiRecipe/ingredients}.length > 0 || ${/aiRecipe/generatingIngredients} }"
+                    expandable="false"
+                    class="sapUiSmallMarginTop">
+                    <content>
+                        <VBox>
+                            <!-- Placeholder message when empty -->
+                            <Text 
+                                text="Click 'Generate Ingredients with AI' to populate ingredients for your recipe."
+                                visible="{= ${/aiRecipe/ingredients}.length === 0 &amp;&amp; !${/aiRecipe/generatingIngredients} }"
+                                class="sapUiSmallMargin" />
+                            
+                            <!-- Ingredients Table with Alternative ComboBox -->
+                            <Table
+                                id="aiIngredientsTable"
+                                visible="{= ${/aiRecipe/ingredients}.length > 0 }"
+                                items="{/aiRecipe/ingredients}"
+                                mode="Delete"
+                                delete=".onDeleteAIIngredient">
+                                <columns>
+                                    <Column width="20%">
+                                        <Text text="Ingredient" />
+                                    </Column>
+                                    <Column width="10%" hAlign="Center">
+                                        <Text text="Qty" />
+                                    </Column>
+                                    <Column width="25%">
+                                        <Text text="Select Alternative" />
+                                    </Column>
+                                    <Column width="45%">
+                                        <Text text="Reason / Benefits" />
+                                    </Column>
+                                </columns>
+                                <items>
+                                    <ColumnListItem>
+                                        <cells>
+                                            <!-- Ingredient Name -->
+                                            <Text text="{name}" wrapping="false" />
+                                            
+                                            <!-- Quantity -->
+                                            <Text text="{quantity}" />
+                                            
+                                            <!-- Alternative Selection ComboBox -->
+                                            <ComboBox
+                                                selectedKey="{selectedAlternative}"
+                                                placeholder="Use Original"
+                                                width="100%"
+                                                selectionChange=".onAlternativeSelectionChange"
+                                                items="{
+                                                    path: 'alternativeItems',
+                                                    templateShareable: false
+                                                }">
+                                                <core:Item key="{key}" text="{text}" />
+                                            </ComboBox>
+                                            
+                                            <!-- Reason/Benefits Display -->
+                                            <VBox>
+                                                <HBox wrap="Wrap" visible="{= ${selectedBenefits} &amp;&amp; ${selectedBenefits}.length > 0 }">
+                                                    <Text text="{selectedBenefitsText}" wrapping="true" />
+                                                </HBox>
+                                                <HBox visible="{= ${selectedCost} !== '' }" class="sapUiTinyMarginTop">
+                                                    <ObjectStatus
+                                                        text="{selectedCost}"
+                                                        state="{= ${selectedCost} === 'Cheaper' ? 'Success' : (${selectedCost} === 'Expensive' ? 'Warning' : 'None') }"
+                                                        icon="{= ${selectedCost} === 'Cheaper' ? 'sap-icon://trend-down' : (${selectedCost} === 'Expensive' ? 'sap-icon://trend-up' : 'sap-icon://equal') }" />
+                                                    <ObjectStatus
+                                                        text="{selectedAvailability}"
+                                                        state="{= ${selectedAvailability} === 'High' ? 'Success' : (${selectedAvailability} === 'Low' ? 'Error' : 'Warning') }"
+                                                        icon="sap-icon://inventory"
+                                                        class="sapUiSmallMarginBegin"
+                                                        visible="{= ${selectedAvailability} !== '' }" />
+                                                </HBox>
+                                                <Text 
+                                                    text="Select an alternative to see benefits" 
+                                                    visible="{= !${selectedBenefits} || ${selectedBenefits}.length === 0 }"
+                                                    class="sapUiTinyMarginTop" />
+                                            </VBox>
+                                        </cells>
+                                    </ColumnListItem>
+                                </items>
+                            </Table>
+                            
+                            <!-- Summary -->
+                            <HBox justifyContent="End" class="sapUiSmallMarginTop" visible="{= ${/aiRecipe/ingredients}.length > 0 }">
+                                <Text text="{= 'Total: ' + ${/aiRecipe/ingredients}.length + ' ingredient(s)' }" />
+                            </HBox>
+                        </VBox>
+                    </content>
+                </Panel>
+                
+            </VBox>
+        </content>
+        <beginButton>
+            <Button
+                text="Create Recipe"
+                type="Emphasized"
+                icon="sap-icon://add"
+                press=".onSaveAIRecipe"
+                enabled="{= ${/aiRecipe/foodName} !== '' &amp;&amp; ${/aiRecipe/regionId} !== '' &amp;&amp; ${/aiRecipe/ingredients}.length > 0 }" />
+        </beginButton>
+        <endButton>
+            <Button
+                text="Cancel"
+                press=".onCancelAIRecipe" />
+        </endButton>
+    </Dialog>
+    
+</core:FragmentDefinition>

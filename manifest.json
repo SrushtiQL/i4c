@@ -1,0 +1,68 @@
+{
+    "_version": "1.12.0",
+    "sap.app": {
+        "id": "fiori.ingredient",
+        "type": "application",
+        "title": "Manage Recipes",
+        "description": "Manage recipes with alternatives and versions",
+        "applicationVersion": {
+            "version": "1.0.0"
+        }
+    },
+    "sap.ui": {
+        "technology": "UI5",
+        "deviceTypes": {
+            "desktop": true,
+            "tablet": true,
+            "phone": true
+        }
+    },
+    "sap.ui5": {
+        "rootView": {
+            "viewName": "fiori.ingredient.view.App",
+            "type": "XML",
+            "id": "app"
+        },
+        "dependencies": {
+            "minUI5Version": "1.60",
+            "libs": {
+                "sap.m": {},
+                "sap.ui.core": {},
+                "sap.f": {},
+                "sap.ui.layout": {}
+            }
+        },
+        "routing": {
+            "config": {
+                "routerClass": "sap.m.routing.Router",
+                "viewType": "XML",
+                "viewPath": "fiori.ingredient.view",
+                "controlId": "app",
+                "controlAggregation": "pages",
+                "transition": "slide"
+            },
+            "routes": [
+                {
+                    "pattern": "",
+                    "name": "listReport",
+                    "target": "listReport"
+                },
+                {
+                    "pattern": "recipe/{recipeId}",
+                    "name": "objectPage",
+                    "target": "objectPage"
+                }
+            ],
+            "targets": {
+                "listReport": {
+                    "viewName": "ListReport",
+                    "viewLevel": 1
+                },
+                "objectPage": {
+                    "viewName": "ObjectPage",
+                    "viewLevel": 2
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,253 @@
+<mvc:View
+    controllerName="fiori.ingredient.controller.ListReport"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:f="sap.f"
+    xmlns:core="sap.ui.core"
+    xmlns:fb="sap.ui.comp.filterbar"
+    displayBlock="true">
+    <f:ShellBar
+        id="shellBar"
+        title="Manage Recipes"
+        homeIcon="images/sap-logo.png"
+        showMenuButton="false"
+        showNavButton="false"
+        showCopilot="false"
+        showSearch="false"
+        showNotifications="false"
+        showProductSwitcher="false" />
+    <Page
+        id="listReportPage"
+        showHeader="false">
+        <content>
+            <VBox class="sapUiSmallMargin">
+                <!-- Variant Management -->
+                <HBox justifyContent="SpaceBetween" class="sapUiSmallMarginBottom">
+                    <Title text="Standard" class="sapUiSmallMarginTop" />
+                    <Button
+                        icon="sap-icon://action-settings"
+                        type="Transparent"
+                        tooltip="Variant Management" />
+                </HBox>
+                
+                <!-- Filter Bar -->
+                <VBox class="sapUiSmallMarginBottom">
+                    <HBox class="sapUiTinyMarginBottom">
+                        <VBox width="20%" class="sapUiTinyMarginEnd">
+                            <Label text="Editing Status:" />
+                            <Select
+                                id="editingStatusFilter"
+                                width="100%"
+                                selectedKey="{/filters/editingStatus}"
+                                change=".onFilterChange">
+                                <items>
+                                    <core:Item key="" text="All" />
+                                    <core:Item key="Draft" text="Draft" />
+                                    <core:Item key="Active" text="Active" />
+                                    <core:Item key="Inactive" text="Inactive" />
+                                </items>
+                            </Select>
+                        </VBox>
+                        <VBox width="20%" class="sapUiTinyMarginEnd">
+                            <Label text="Recipe Type:" />
+                            <Select
+                                id="recipeTypeFilter"
+                                width="100%"
+                                selectedKey="{/filters/recipeType}"
+                                change=".onFilterChange">
+                                <items>
+                                    <core:Item key="" text="" />
+                                    <core:Item key="FRM" text="FRM Recipe Type" />
+                                    <core:Item key="STD" text="Standard Recipe" />
+                                </items>
+                            </Select>
+                        </VBox>
+                        <VBox width="20%" class="sapUiTinyMarginEnd">
+                            <Label text="Status:" />
+                            <Select
+                                id="statusFilter"
+                                width="100%"
+                                selectedKey="{/filters/status}"
+                                change=".onFilterChange">
+                                <items>
+                                    <core:Item key="" text="" />
+                                    <core:Item key="Released" text="Released" />
+                                    <core:Item key="In Progress" text="In Progress" />
+                                </items>
+                            </Select>
+                        </VBox>
+                        <VBox width="20%" class="sapUiTinyMarginEnd">
+                            <Label text="Primary Output Specification:" />
+                            <Input
+                                id="primaryOutputFilter"
+                                width="100%"
+                                placeholder=""
+                                showValueHelp="true"
+                                valueHelpRequest=".onValueHelp" />
+                        </VBox>
+                        <VBox width="20%">
+                            <Label text="Product:" />
+                            <Input
+                                id="productFilter"
+                                width="100%"
+                                placeholder=""
+                                showValueHelp="true"
+                                valueHelpRequest=".onValueHelp" />
+                        </VBox>
+                    </HBox>
+                    
+                    <!-- Filter Actions -->
+                    <HBox>
+                        <Button
+                            text="Go"
+                            type="Emphasized"
+                            press=".onFilterGo"
+                            class="sapUiTinyMarginEnd" />
+                        <Button
+                            text="Adapt Filters (2)"
+                            press=".onAdaptFilters"
+                            class="sapUiTinyMarginEnd" />
+                        <ToolbarSpacer />
+                        <Button
+                            icon="sap-icon://collapse-group"
+                            type="Transparent"
+                            press=".onCollapseFilters"
+                            tooltip="Collapse Filters" />
+                        <Button
+                            icon="sap-icon://drop-down-list"
+                            type="Transparent"
+                            tooltip="Show Filter Bar" />
+                    </HBox>
+                </VBox>
+                
+                <!-- Title and Count -->
+                <HBox justifyContent="SpaceBetween" class="sapUiSmallMarginBottom">
+                    <HBox>
+                        <Title text="Recipes ({= ${/recipes}.length })" class="sapUiSmallMarginEnd" />
+                        <SearchField
+                            id="searchField"
+                            width="20rem"
+                            placeholder="Search recipes..."
+                            search=".onSearch"
+                            liveChange=".onSearch" />
+                    </HBox>
+                    <HBox>
+                        <Button
+                            text="Create"
+                            type="Emphasized"
+                            press=".onCreateRecipe"
+                            class="sapUiTinyMarginEnd" />
+                        <Button
+                            text="Copy"
+                            press=".onCopyRecipe"
+                            enabled="{= ${/selectedRecipe} !== null}"
+                            class="sapUiTinyMarginEnd" />
+                        <Button
+                            text="Delete"
+                            press=".onDeleteRecipe"
+                            enabled="{= ${/selectedRecipe} !== null}"
+                            class="sapUiTinyMarginEnd" />
+                        <Button
+                            icon="sap-icon://excel-attachment"
+                            type="Transparent"
+                            tooltip="Export to Excel" />
+                        <Button
+                            icon="sap-icon://action-settings"
+                            type="Transparent"
+                            tooltip="Settings" />
+                        <Button
+                            icon="sap-icon://table-view"
+                            type="Transparent"
+                            tooltip="Table Settings" />
+                        <Button
+                            icon="sap-icon://sort"
+                            type="Transparent"
+                            tooltip="Sort" />
+                        <Button
+                            icon="sap-icon://filter"
+                            type="Transparent"
+                            tooltip="Filter" />
+                    </HBox>
+                </HBox>
+                
+                <!-- Recipes Table -->
+                <Table
+                    id="recipesTable"
+                    inset="false"
+                    items="{/recipes}"
+                    growing="true"
+                    growingThreshold="20"
+                    mode="SingleSelectLeft"
+                    selectionChange=".onRecipeSelect">
+                    <columns>
+                        <Column width="4rem">
+                            <Text text="Thumbnail" />
+                        </Column>
+                        <Column width="12rem">
+                            <Text text="Recipe" />
+                        </Column>
+                        <Column width="8rem">
+                            <Text text="Alternative" />
+                        </Column>
+                        <Column width="8rem">
+                            <Text text="Version" />
+                        </Column>
+                        <Column minScreenWidth="Tablet" demandPopin="true" width="15rem">
+                            <Text text="Recipe Type" />
+                        </Column>
+                        <Column minScreenWidth="Tablet" demandPopin="true" width="10rem">
+                            <Text text="Status" />
+                        </Column>
+                        <Column minScreenWidth="Desktop" demandPopin="true">
+                            <Text text="Primary Output Specification" />
+                        </Column>
+                        <Column minScreenWidth="Desktop" demandPopin="true" width="12rem">
+                            <Text text="Product" />
+                        </Column>
+                    </columns>
+                    <items>
+                        <ColumnListItem type="Active" press=".onRecipePress">
+                            <cells>
+                                <!-- Thumbnail -->
+                                <HBox alignItems="Center" justifyContent="Center">
+                                    <core:Icon
+                                        src="sap-icon://product"
+                                        size="2rem"
+                                        color="#0854A0" />
+                                </HBox>
+                                <!-- Recipe Name and ID -->
+                                <VBox>
+                                    <Link
+                                        text="{name}"
+                                        press=".onRecipePress" />
+                                    <Text
+                                        text="{id}"
+                                        class="sapUiTinyMarginTop" />
+                                </VBox>
+                                <!-- Alternative -->
+                                <Text text="{alternative}" />
+                                <!-- Version -->
+                                <Text text="{version}" />
+                                <!-- Recipe Type -->
+                                <Text text="{recipeType}" />
+                                <!-- Status -->
+                                <ObjectStatus
+                                    text="{status}"
+                                    state="{statusState}" />
+                                <!-- Primary Output Specification -->
+                                <VBox>
+                                    <Link text="{primaryOutput}" />
+                                    <Text
+                                        text="{primaryOutputCode}"
+                                        class="sapUiTinyMarginTop" />
+                                </VBox>
+                                <!-- Product -->
+                                <Text text="{product}" />
+                            </cells>
+                        </ColumnListItem>
+                    </items>
+                </Table>
+            </VBox>
+        </content>
+    </Page>
+</mvc:View>

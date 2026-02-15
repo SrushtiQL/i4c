@@ -1,0 +1,22 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core">
+    
+    <ActionSheet
+        id="createOptionsActionSheet"
+        title="Create Recipe"
+        showCancelButton="true"
+        placement="Bottom">
+        <buttons>
+            <Button
+                text="Create Manually"
+                icon="sap-icon://edit"
+                press=".onCreateManually" />
+            <Button
+                text="Create with AI"
+                icon="sap-icon://sap-ui5"
+                press=".onCreateWithAI" />
+        </buttons>
+    </ActionSheet>
+    
+</core:FragmentDefinition>

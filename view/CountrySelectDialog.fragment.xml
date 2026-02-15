@@ -1,0 +1,17 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core">
+    <SelectDialog
+        id="countrySelectDialog"
+        title="Select Country"
+        noDataText="No countries found"
+        search="onCountrySearch"
+        confirm="onCountryConfirm"
+        cancel="onCountryCancel"
+        items="{/countries}">
+        <StandardListItem
+            title="{name}"
+            description="{code}"
+            type="Active" />
+    </SelectDialog>
+</core:FragmentDefinition>

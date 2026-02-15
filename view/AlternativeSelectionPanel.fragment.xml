@@ -1,0 +1,138 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns:f="sap.f">
+    
+    <Dialog
+        id="alternativeSelectionDialog"
+        title="Select Alternative Ingredient"
+        contentWidth="600px"
+        contentHeight="auto"
+        resizable="true"
+        draggable="true">
+        <content>
+            <VBox class="sapUiSmallMargin">
+                
+                <!-- Current Ingredient Info -->
+                <Panel headerText="Current Ingredient" class="sapUiSmallMarginBottom">
+                    <VBox class="sapUiSmallMargin">
+                        <HBox class="sapUiTinyMarginBottom">
+                            <Label text="Name:" class="sapUiTinyMarginEnd" width="100px" />
+                            <Text text="{/selectedIngredient/currentIngredient}" />
+                        </HBox>
+                        <HBox class="sapUiTinyMarginBottom">
+                            <Label text="Quantity:" class="sapUiTinyMarginEnd" width="100px" />
+                            <Text text="{/selectedIngredient/currentQty}" />
+                            <Text text=" {/selectedIngredient/currentUnit}" class="sapUiTinyMarginBegin" />
+                        </HBox>
+                        
+                        <!-- Restriction Warning -->
+                        <MessageStrip
+                            text="{= '⚠️ RESTRICTED: ' + ${/selectedIngredient/currentIngredientReason} }"
+                            type="Error"
+                            showIcon="true"
+                            visible="{/selectedIngredient/currentIngredientRestricted}"
+                            class="sapUiSmallMarginTop" />
+                    </VBox>
+                </Panel>
+                
+                <!-- Alternative Options -->
+                <Panel headerText="Select One Option" class="sapUiSmallMarginBottom">
+                    <VBox class="sapUiSmallMargin">
+                        
+                        <!-- Radio Button Group (must have direct RadioButton children) -->
+                        <RadioButtonGroup
+                            id="alternativeRadioGroup"
+                            selectedIndex="{/selectedIngredient/selectedAlternativeIndex}"
+                            columns="1">
+                            
+                            <!-- Option 0: Keep Current (disabled if restricted) -->
+                            <RadioButton 
+                                text="Keep Current Ingredient (No Change)"
+                                enabled="{= !${/selectedIngredient/currentIngredientRestricted} }" />
+                            
+                            <!-- Alternative 1 -->
+                            <RadioButton 
+                                text="{parts: [{path: '/selectedIngredient/alternatives/0/name'}, {path: '/selectedIngredient/alternatives/0/sgdScorePercentage'}], formatter: '.formatAlternativeWithScore'}"
+                                visible="{= ${/selectedIngredient/alternatives/0} !== undefined }" />
+                            
+                            <!-- Alternative 2 -->
+                            <RadioButton 
+                                text="{parts: [{path: '/selectedIngredient/alternatives/1/name'}, {path: '/selectedIngredient/alternatives/1/sgdScorePercentage'}], formatter: '.formatAlternativeWithScore'}"
+                                visible="{= ${/selectedIngredient/alternatives/1} !== undefined }" />
+                            
+                            <!-- Alternative 3 -->
+                            <RadioButton 
+                                text="{parts: [{path: '/selectedIngredient/alternatives/2/name'}, {path: '/selectedIngredient/alternatives/2/sgdScorePercentage'}], formatter: '.formatAlternativeWithScore'}"
+                                visible="{= ${/selectedIngredient/alternatives/2} !== undefined }" />
+                            
+                        </RadioButtonGroup>
+                        
+                        <!-- SGD Score Legend (displayed below radio buttons) -->
+                        <VBox class="sapUiSmallMarginTop" visible="{= ${/selectedIngredient/alternatives/0} !== undefined }">
+                            <Label text="SGD Score Indicators:" design="Bold" class="sapUiTinyMarginBottom" />
+                            <HBox class="sapUiTinyMarginBottom">
+                                <ObjectStatus text="High (80% and above)" state="Success" icon="sap-icon://performance" class="sapUiTinyMarginEnd" />
+                                <ObjectStatus text="Medium (60-79%)" state="Warning" icon="sap-icon://performance" class="sapUiTinyMarginEnd" />
+                                <ObjectStatus text="Low (below 60%)" state="Error" icon="sap-icon://performance" />
+                            </HBox>
+                        </VBox>
+                        
+                        <!-- Reasons displayed separately below -->
+                        <VBox class="sapUiSmallMarginTop">
+                            
+                            <!-- Reason for Alternative 1 -->
+                            <VBox 
+                                visible="{= ${/selectedIngredient/alternatives}.length >= 1 &amp;&amp; ${/selectedIngredient/selectedAlternativeIndex} === 1 }"
+                                class="sapUiTinyMarginBottom">
+                                <Text 
+                                    text="{= '✓ ' + ${/selectedIngredient/alternatives/0/reason} }"
+                                    wrapping="true" />
+                            </VBox>
+                            
+                            <!-- Reason for Alternative 2 -->
+                            <VBox 
+                                visible="{= ${/selectedIngredient/alternatives}.length >= 2 &amp;&amp; ${/selectedIngredient/selectedAlternativeIndex} === 2 }"
+                                class="sapUiTinyMarginBottom">
+                                <Text 
+                                    text="{= '✓ ' + ${/selectedIngredient/alternatives/1/reason} }"
+                                    wrapping="true" />
+                            </VBox>
+                            
+                            <!-- Reason for Alternative 3 -->
+                            <VBox 
+                                visible="{= ${/selectedIngredient/alternatives}.length >= 3 &amp;&amp; ${/selectedIngredient/selectedAlternativeIndex} === 3 }"
+                                class="sapUiTinyMarginBottom">
+                                <Text 
+                                    text="{= '✓ ' + ${/selectedIngredient/alternatives/2/reason} }"
+                                    wrapping="true" />
+                            </VBox>
+                            
+                        </VBox>
+                    </VBox>
+                </Panel>
+                
+                <!-- No Alternatives Message -->
+                <MessageStrip
+                    text="No alternatives found for this ingredient in the database."
+                    type="Information"
+                    showIcon="true"
+                    visible="{= ${/selectedIngredient/alternatives}.length === 0 }"
+                    class="sapUiSmallMarginBottom" />
+                
+            </VBox>
+        </content>
+        <beginButton>
+            <Button
+                text="Approve"
+                type="Emphasized"
+                press=".onApproveAlternativeSelection" />
+        </beginButton>
+        <endButton>
+            <Button
+                text="Cancel"
+                press=".onCancelAlternativeSelection" />
+        </endButton>
+    </Dialog>
+    
+</core:FragmentDefinition>

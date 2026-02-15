@@ -1,0 +1,100 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns:f="sap.ui.layout.form">
+    
+    <Dialog
+        id="createRecipeDialog"
+        title="Create New Recipe"
+        contentWidth="600px"
+        contentHeight="auto"
+        resizable="true"
+        draggable="true">
+        <content>
+            <VBox class="sapUiSmallMargin">
+                
+                <!-- Product Name -->
+                <VBox class="sapUiSmallMarginBottom">
+                    <Label text="Product Name:" required="true" />
+                    <Input
+                        id="productNameInput"
+                        placeholder="Enter product name"
+                        value="{/newRecipe/productName}"
+                        required="true"
+                        width="100%" />
+                </VBox>
+                
+                <!-- Recipe ID (Auto-generated, read-only) -->
+                <VBox class="sapUiSmallMarginBottom">
+                    <Label text="Recipe ID:" />
+                    <Input
+                        id="recipeIdInput"
+                        value="{/newRecipe/recipeId}"
+                        enabled="false"
+                        width="100%" />
+                    <Text text="(Auto-generated)" class="sapUiTinyMarginTop" />
+                </VBox>
+                
+                <!-- Region Selection -->
+                <VBox class="sapUiSmallMarginBottom">
+                    <Label text="Region:" required="true" />
+                    <ComboBox
+                        id="regionComboBox"
+                        placeholder="Select Region"
+                        selectedKey="{/newRecipe/regionId}"
+                        items="{/countries}"
+                        width="100%"
+                        required="true">
+                        <core:Item key="{id}" text="{name}" />
+                    </ComboBox>
+                </VBox>
+                
+                <!-- Ingredient Selection (Multi-select) -->
+                <VBox class="sapUiSmallMarginBottom">
+                    <Label text="Select Ingredients:" required="true" />
+                    <MultiComboBox
+                        id="ingredientsMultiComboBox"
+                        placeholder="Select ingredients"
+                        selectedKeys="{/newRecipe/selectedIngredientIds}"
+                        items="{/availableIngredients}"
+                        width="100%"
+                        selectionChange=".onIngredientSelectionChangeInDialog">
+                        <core:Item key="{INGREDIENT_ID}" text="{INGREDIENT_NAME}" />
+                    </MultiComboBox>
+                    <Text 
+                        text="{= 'Selected: ' + ${/newRecipe/selectedIngredientIds}.length + ' ingredient(s)' }"
+                        class="sapUiTinyMarginTop" />
+                </VBox>
+                
+                <!-- Recipe Type (Optional) -->
+                <VBox class="sapUiSmallMarginBottom">
+                    <Label text="Recipe Type:" />
+                    <ComboBox
+                        id="recipeTypeComboBox"
+                        selectedKey="{/newRecipe/recipeType}"
+                        width="100%">
+                        <items>
+                            <core:Item key="Standard" text="Standard" />
+                            <core:Item key="Premium" text="Premium" />
+                            <core:Item key="Organic" text="Organic" />
+                            <core:Item key="Diet" text="Diet" />
+                        </items>
+                    </ComboBox>
+                </VBox>
+                
+            </VBox>
+        </content>
+        <beginButton>
+            <Button
+                text="Create"
+                type="Emphasized"
+                press=".onSaveNewRecipe" />
+        </beginButton>
+        <endButton>
+            <Button
+                text="Cancel"
+                press=".onCancelCreateRecipe" />
+        </endButton>
+    </Dialog>
+    
+</core:FragmentDefinition>

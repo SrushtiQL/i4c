@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Ingredient Manager</title>
+    
+    <!-- OpenUI5 CDN -->
+    <script
+        id="sap-ui-bootstrap"
+        src="https://sdk.openui5.org/resources/sap-ui-core.js"
+        data-sap-ui-theme="sap_horizon"
+        data-sap-ui-libs="sap.m,sap.f"
+        data-sap-ui-resourceroots='{
+            "fiori.ingredient": "./"
+        }'
+        data-sap-ui-compatVersion="edge"
+        data-sap-ui-async="true">
+    </script>
+    
+    <!-- JSZip library for ZIP extraction -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    
+    <script>
+        sap.ui.getCore().attachInit(function() {
+            sap.ui.require([
+                "sap/ui/core/ComponentContainer"
+            ], function(ComponentContainer) {
+                new ComponentContainer({
+                    name: "fiori.ingredient",
+                    height: "100%",
+                    settings: {
+                        id: "ingredientApp"
+                    }
+                }).placeAt("content");
+            });
+        });
+    </script>
+    
+    <style>
+        html, body, #content {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+    </style>
+</head>
+<body class="sapUiBody" id="content">
+</body>
+</html>
