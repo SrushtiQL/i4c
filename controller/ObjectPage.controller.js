@@ -844,7 +844,7 @@ sap.ui.define([
             // Convert country name to API code
             var sCountryCode = this._getCountryCode(sCountry);
             
-            return fetch('http://localhost:5000/validate-ingredients', {
+            return fetch('http://localhost:5001/validate-ingredients', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -1122,6 +1122,8 @@ sap.ui.define([
             var oModel = this.getView().getModel();
             var oNewRecipe = oModel.getProperty("/newRecipe");
             
+            console.log("Creating recipe with data:", oNewRecipe);
+            
             // Validate required fields
             if (!oNewRecipe.productName || oNewRecipe.productName.trim() === "") {
                 MessageToast.show("⚠️ Please enter a product name");
@@ -1138,29 +1140,39 @@ sap.ui.define([
                 return;
             }
             
-            // Find region name
+            // Find region code
             var aCountries = oModel.getProperty("/countries");
             var oRegion = aCountries.find(function(country) {
                 return country.id === oNewRecipe.regionId;
             });
-            var sRegionName = oRegion ? oRegion.name : oNewRecipe.regionId;
+            var sRegionFK = oRegion ? oRegion.code || oRegion.id : oNewRecipe.regionId;
             
-            // Prepare data for PocketBase
+            // Prepare data for NEW recipe collection with correct field names
             var oPayload = {
-                PRODUCT_NAME: oNewRecipe.productName.trim(),
-                RECIPE_ID: oNewRecipe.recipeId,
-                REGION: sRegionName,
-                INGREDIENT_IDS: oNewRecipe.selectedIngredientIds.join("|")
+                name: oNewRecipe.productName.trim(),
+                field_id: oNewRecipe.recipeId,
+                region_fk: sRegionFK,
+                type: oNewRecipe.recipeType || "Standard",
+                status: "Draft",
+                lifecycle: "Validation",
+                ver: 1
             };
+            
+            MessageToast.show("Creating recipe...");
             
             var oConfigModel = this.getOwnerComponent().getModel("config");
             var sPocketbaseURL = oConfigModel.getProperty("/pocketbaseURL");
             
-            // Authenticate first, then POST
+            // Authenticate first, then POST recipe and ingredients
+            var sAuthToken;
+            var oCreatedRecipe;
+            
             this._authenticateAdmin()
                 .then(function(sToken) {
+                    sAuthToken = sToken;
+                    
                     return jQuery.ajax({
-                        url: sPocketbaseURL + "/api/collections/ProductIngredients/records",
+                        url: sPocketbaseURL + "/api/collections/recipe/records",
                         method: "POST",
                         headers: {
                             "Authorization": sToken
@@ -1170,17 +1182,76 @@ sap.ui.define([
                     });
                 }.bind(this))
                 .then(function(oData) {
+                    oCreatedRecipe = oData;
+                    console.log("Recipe created:", oCreatedRecipe);
+                    
+                    // Now save selected ingredients to recipeingredient collection
+                    if (!oNewRecipe.selectedIngredientIds || oNewRecipe.selectedIngredientIds.length === 0) {
+                        return Promise.resolve([]);
+                    }
+                    
+                    // Get ingredient details from availableIngredients
+                    var aAvailableIngredients = oModel.getProperty("/availableIngredients");
+                    
+                    // Create promises for each selected ingredient
+                    var aIngredientPromises = oNewRecipe.selectedIngredientIds.map(function(sIngredientId) {
+                        // Find ingredient details - selectedIngredientIds contains field_id values
+                        var oIngredient = aAvailableIngredients.find(function(ing) {
+                            return ing.field_id === sIngredientId || ing.INGREDIENT_ID === sIngredientId;
+                        });
+                        
+                        console.log("Creating ingredient link for:", sIngredientId, oIngredient);
+                        
+                        // Create ingredient record payload
+                        var oIngredientPayload = {
+                            recipe_fk: oCreatedRecipe.id,
+                            ingredient_fk: sIngredientId,
+                            originalingredient_fk: sIngredientId,
+                            quantity: 0,
+                            unit: "",
+                            isalternative: 0,
+                            functionalrole: ""
+                        };
+                        
+                        return jQuery.ajax({
+                            url: sPocketbaseURL + "/api/collections/recipeingredient/records",
+                            method: "POST",
+                            headers: { "Authorization": sAuthToken },
+                            contentType: "application/json",
+                            data: JSON.stringify(oIngredientPayload)
+                        });
+                    });
+                    
+                    return Promise.all(aIngredientPromises);
+                }.bind(this))
+                .then(function(aIngredientResults) {
+                    // Close dialog
                     this._oCreateRecipeDialog.close();
+                    
+                    // Reload all recipes
                     this._loadAllRecipesFromAPI();
                     
+                    // Navigate to new recipe's ObjectPage
                     var oRouter = this.getOwnerComponent().getRouter();
                     oRouter.navTo("objectPage", {
                         recipeId: oNewRecipe.recipeId
                     });
+                    
+                    var sSuccessMsg = "✅ Recipe '" + oNewRecipe.productName + "' created";
+                    if (aIngredientResults && aIngredientResults.length > 0) {
+                        sSuccessMsg += " with " + aIngredientResults.length + " ingredients!";
+                    } else {
+                        sSuccessMsg += " successfully!";
+                    }
+                    MessageToast.show(sSuccessMsg);
                 }.bind(this))
                 .catch(function(error) {
                     console.error("❌ Failed to create recipe:", error);
-                    MessageToast.show("❌ Failed to create recipe: " + error.message);
+                    var sErrorMsg = error.message || "Unknown error";
+                    if (error.responseJSON && error.responseJSON.message) {
+                        sErrorMsg = error.responseJSON.message;
+                    }
+                    MessageToast.show("❌ Failed to create recipe: " + sErrorMsg);
                 }.bind(this));
         },
 

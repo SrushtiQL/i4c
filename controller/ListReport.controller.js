@@ -56,15 +56,11 @@ sap.ui.define([
         },
 
         _onRouteMatched: function () {
-            console.log("🔄 ListReport route matched - refreshing data");
-            // Reload recipes when navigating back to this page
             this._loadRecipesFromAPI();
         },
         _loadCountriesFromAPI: function () {
             var oConfigModel = this.getOwnerComponent().getModel("config");
             var sPocketbaseURL = oConfigModel.getProperty("/pocketbaseURL");
-            
-            console.log("📡 Loading countries from 'country' collection...");
             
             // Use the NEW 'country' collection with proper country names
             jQuery.ajax({
@@ -75,8 +71,6 @@ sap.ui.define([
                     sort: "name"
                 },
                 success: function(oData) {
-                    console.log("✅ Loaded " + oData.items.length + " countries from country collection");
-                    
                     // Map country collection fields
                     var aCountries = oData.items.map(function(item) {
                         return {
@@ -100,8 +94,6 @@ sap.ui.define([
             var oConfigModel = this.getOwnerComponent().getModel("config");
             var sPocketbaseURL = oConfigModel.getProperty("/pocketbaseURL");
             
-            console.log("📡 Loading all ingredients from 'ingredients' collection...");
-            
             // Use the NEW 'ingredients' collection instead of old 'IngredientMaster'
             jQuery.ajax({
                 url: sPocketbaseURL + "/api/collections/ingredients/records",
@@ -111,8 +103,6 @@ sap.ui.define([
                     sort: "name"
                 },
                 success: function(oData) {
-                    console.log("✅ Loaded " + oData.items.length + " ingredients from ingredients collection");
-                    
                     // Map the ingredients to include all needed fields with proper names
                     var aMappedIngredients = oData.items.map(function(item) {
                         return {
@@ -140,13 +130,9 @@ sap.ui.define([
             var oConfigModel = this.getOwnerComponent().getModel("config");
             var sPocketbaseURL = oConfigModel.getProperty("/pocketbaseURL");
             
-            console.log("📡 Loading all recipes from 'recipe' collection with pagination...");
-            
             // Fetch all records using pagination from NEW recipe collection
             this._fetchAllRecords(sPocketbaseURL, "/api/collections/recipe/records")
                 .then(function(aAllItems) {
-                    console.log("✅ Loaded " + aAllItems.length + " total recipes from recipe collection");
-                    
                     var aRecipes = aAllItems.map(function(item) {
                         // Map new recipe collection fields to UI model
                         return {
@@ -169,7 +155,6 @@ sap.ui.define([
                     });
                     
                     this.getView().getModel().setProperty("/recipes", aRecipes);
-                    MessageToast.show("Loaded " + aRecipes.length + " recipes from new database");
                 }.bind(this))
                 .catch(function(error) {
                     MessageToast.show("Error loading recipes: " + error.message);
@@ -195,8 +180,6 @@ sap.ui.define([
                             var aItems = oData.items || [];
                             aAllRecords = aAllRecords.concat(aItems);
                             
-                            console.log("📄 Fetched page " + iPage + ": " + aItems.length + " records (Total: " + aAllRecords.length + ")");
-                            
                             // Check if there are more pages
                             if (aItems.length === iPerPage) {
                                 // There might be more records, fetch next page
@@ -204,7 +187,6 @@ sap.ui.define([
                                 fetchPage();
                             } else {
                                 // Last page reached
-                                console.log("✅ All pages fetched. Total records: " + aAllRecords.length);
                                 resolve(aAllRecords);
                             }
                         },
@@ -248,7 +230,6 @@ sap.ui.define([
 
         onFilterChange: function (oEvent) {
             // Filter change handler - could trigger auto-filter
-            MessageToast.show("Filter changed");
         },
 
         onFilterGo: function () {
@@ -273,25 +254,22 @@ sap.ui.define([
             }
 
             oBinding.filter(aFilters);
-            MessageToast.show("Filters applied");
         },
 
         onAdaptFilters: function () {
-            MessageToast.show("Adapt Filters dialog would open here");
+            // TODO: Implement adapt filters dialog
         },
 
         onCollapseFilters: function () {
-            MessageToast.show("Filter bar collapsed");
+            // Filter bar collapsed
         },
 
         onValueHelp: function (oEvent) {
-            MessageToast.show("Value help dialog would open here");
+            // TODO: Implement value help dialog
         },
 
         // Show Action Sheet with Create options (Manual or AI)
         onCreateRecipe: function (oEvent) {
-            console.log("📝 Showing Create Recipe options");
-            
             // Show Action Sheet with options
             if (!this._oCreateOptionsActionSheet) {
                 sap.ui.core.Fragment.load({
@@ -310,8 +288,6 @@ sap.ui.define([
 
         // Create Manually - Opens existing Create Recipe Dialog
         onCreateManually: function () {
-            console.log("📝 Opening Create Recipe dialog (Manual)");
-            
             var oModel = this.getView().getModel();
             
             // Generate unique Recipe ID
@@ -336,11 +312,9 @@ sap.ui.define([
                             this._oCreateRecipeDialog = oDialog;
                             this.getView().addDependent(oDialog);
                             oDialog.open();
-                            console.log("✅ Manual Create Recipe dialog opened with ID:", sNewRecipeId);
                         }.bind(this));
                     } else {
                         this._oCreateRecipeDialog.open();
-                        console.log("✅ Manual Create Recipe dialog opened with ID:", sNewRecipeId);
                     }
                 }.bind(this))
                 .catch(function(error) {
@@ -351,8 +325,6 @@ sap.ui.define([
 
         // Create with AI - Opens AI-assisted Create Recipe Dialog
         onCreateWithAI: function () {
-            console.log("🤖 Opening Create Recipe with AI dialog");
-            
             var oModel = this.getView().getModel();
             
             // Generate unique Recipe ID
@@ -378,11 +350,9 @@ sap.ui.define([
                             this._oCreateAIRecipeDialog = oDialog;
                             this.getView().addDependent(oDialog);
                             oDialog.open();
-                            console.log("✅ AI Create Recipe dialog opened with ID:", sNewRecipeId);
                         }.bind(this));
                     } else {
                         this._oCreateAIRecipeDialog.open();
-                        console.log("✅ AI Create Recipe dialog opened with ID:", sNewRecipeId);
                     }
                 }.bind(this))
                 .catch(function(error) {
@@ -393,16 +363,12 @@ sap.ui.define([
 
         // AI Food Name Change Handler
         onAIFoodNameChange: function (oEvent) {
-            var sValue = oEvent.getParameter("value");
-            console.log("📝 AI Food name changed:", sValue);
+            // Food name changed
         },
 
         // AI Region Change Handler
         onAIRegionChange: function (oEvent) {
-            var oSelectedItem = oEvent.getParameter("selectedItem");
-            if (oSelectedItem) {
-                console.log("🌍 AI Region selected:", oSelectedItem.getText());
-            }
+            // Region changed
         },
 
         // Generate Ingredients with AI - Calls Recipe Ingredient Agent API
@@ -428,17 +394,14 @@ sap.ui.define([
             });
             var sLocation = oSelectedCountry ? oSelectedCountry.name : "United States";
             
-            console.log("🤖 Generating ingredients with AI for:", oAIRecipe.foodName);
-            console.log("🌍 Location:", sLocation);
-            
             // Show loading
             oModel.setProperty("/aiRecipe/generatingIngredients", true);
             MessageToast.show("🤖 Calling AI agent to generate ingredients...");
             
-            // Recipe Ingredient Agent API URL
-            var sAgentURL = "https://recipe-ingredient-agent.cfapps.eu11.hana.ondemand.com";
+            // Local Regulation Agent API URL
+            var sAgentURL = "http://localhost:5001";
             
-            // Call the Recipe Ingredient Agent API
+            // Call the Regulation Agent API
             fetch(sAgentURL + "/analyze", {
                 method: "POST",
                 headers: {
@@ -456,8 +419,6 @@ sap.ui.define([
                 return response.json();
             })
             .then(function(data) {
-                console.log("✅ AI Agent response received:", data);
-                
                 // Check for errors in response
                 if (data.error) {
                     throw new Error(data.error);
@@ -481,14 +442,22 @@ sap.ui.define([
                         // Add alternatives from API response
                         if (ing.alternatives && ing.alternatives.length > 0) {
                             ing.alternatives.forEach(function(alt) {
-                                var sBenefitsText = alt.benefits ? alt.benefits.join(" • ") : "";
+                                // Handle benefits - might be array or string
+                                var aBenefits = alt.benefits;
+                                if (typeof aBenefits === 'string') {
+                                    aBenefits = aBenefits ? [aBenefits] : [];
+                                } else if (!Array.isArray(aBenefits)) {
+                                    aBenefits = [];
+                                }
+                                
+                                var sBenefitsText = aBenefits.length > 0 ? aBenefits.join(" • ") : "";
                                 var sCost = alt.cost_comparison ? alt.cost_comparison.charAt(0).toUpperCase() + alt.cost_comparison.slice(1) : "";
                                 var sAvailability = alt.regional_availability ? alt.regional_availability.charAt(0).toUpperCase() + alt.regional_availability.slice(1) : "";
                                 
                                 aAlternativeItems.push({
                                     key: alt.name,
                                     text: alt.name,
-                                    benefits: alt.benefits || [],
+                                    benefits: aBenefits,
                                     benefitsText: sBenefitsText,
                                     cost: sCost,
                                     availability: sAvailability,
@@ -513,8 +482,6 @@ sap.ui.define([
                         };
                     });
                 }
-                
-                console.log("📋 Parsed " + aIngredients.length + " ingredients from AI response");
                 
                 // Update model with ingredients
                 oModel.setProperty("/aiRecipe/ingredients", aIngredients);
@@ -542,7 +509,6 @@ sap.ui.define([
             
             // Get selected key
             var sSelectedKey = oComboBox.getSelectedKey();
-            console.log("🔄 Alternative selected:", sSelectedKey, "for path:", sPath);
             
             // Get the ingredient data
             var oIngredient = oModel.getProperty(sPath);
@@ -559,15 +525,6 @@ sap.ui.define([
                 oModel.setProperty(sPath + "/selectedBenefitsText", oSelectedAlt.benefitsText || "No benefits listed");
                 oModel.setProperty(sPath + "/selectedCost", oSelectedAlt.cost || "");
                 oModel.setProperty(sPath + "/selectedAvailability", oSelectedAlt.availability || "");
-                
-                console.log("✅ Updated benefits for", oIngredient.name, ":", oSelectedAlt.benefitsText);
-                
-                // Show toast message
-                if (sSelectedKey) {
-                    MessageToast.show("Selected: " + sSelectedKey + " - " + oSelectedAlt.benefitsText);
-                } else {
-                    MessageToast.show("Using original ingredient: " + oIngredient.name);
-                }
             }
         },
 
@@ -607,8 +564,6 @@ sap.ui.define([
                 return;
             }
             
-            console.log("💾 Saving AI-generated recipe:", oAIRecipe);
-            
             // Find region name
             var aCountries = oModel.getProperty("/countries");
             var oRegion = aCountries.find(function(country) {
@@ -627,8 +582,7 @@ sap.ui.define([
                 ver: 1
             };
             
-            console.log("📤 POST payload to recipe collection:", oPayload);
-            MessageToast.show("💾 Creating AI-generated recipe...");
+            MessageToast.show("Creating AI-generated recipe...");
             
             var oConfigModel = this.getOwnerComponent().getModel("config");
             var sPocketbaseURL = oConfigModel.getProperty("/pocketbaseURL");
@@ -640,7 +594,6 @@ sap.ui.define([
             this._authenticateAdmin()
                 .then(function(sToken) {
                     sAuthToken = sToken;
-                    console.log("🔐 Authenticated, creating recipe...");
                     
                     return jQuery.ajax({
                         url: sPocketbaseURL + "/api/collections/recipe/records",
@@ -651,12 +604,9 @@ sap.ui.define([
                     });
                 }.bind(this))
                 .then(function(oData) {
-                    console.log("✅ AI Recipe created successfully:", oData);
                     oCreatedRecipe = oData;
                     
                     // Now save ingredients to recipeingredient collection
-                    console.log("💾 Saving " + oAIRecipe.ingredients.length + " ingredients...");
-                    
                     // Create promises for each ingredient
                     var aIngredientPromises = oAIRecipe.ingredients.map(function(ingredient, index) {
                         // Determine which ingredient to use: original or selected alternative
@@ -674,8 +624,6 @@ sap.ui.define([
                             functionalrole: ingredient.selectedAlternative ? ingredient.selectedBenefitsText : ""  // Store benefits in functionalrole
                         };
                         
-                        console.log("📤 Saving ingredient:", oIngredientPayload);
-                        
                         return jQuery.ajax({
                             url: sPocketbaseURL + "/api/collections/recipeingredient/records",
                             method: "POST",
@@ -688,8 +636,6 @@ sap.ui.define([
                     return Promise.all(aIngredientPromises);
                 }.bind(this))
                 .then(function(aIngredientResults) {
-                    console.log("✅ All " + aIngredientResults.length + " ingredients saved successfully");
-                    
                     // Close dialog
                     this._oCreateAIRecipeDialog.close();
                     
@@ -698,7 +644,6 @@ sap.ui.define([
                     
                     // Navigate to new recipe's ObjectPage using field_id
                     var oRouter = this.getOwnerComponent().getRouter();
-                    console.log("🧭 Navigating to recipe:", oAIRecipe.recipeId, "PocketBase ID:", oCreatedRecipe.id);
                     oRouter.navTo("objectPage", {
                         recipeId: oAIRecipe.recipeId  // Use field_id for URL
                     });
@@ -714,7 +659,6 @@ sap.ui.define([
 
         // Cancel AI Recipe creation
         onCancelAIRecipe: function () {
-            console.log("❌ AI Recipe creation cancelled");
             this._oCreateAIRecipeDialog.close();
         },
 
@@ -722,13 +666,14 @@ sap.ui.define([
             var oMultiComboBox = oEvent.getSource();
             var aSelectedKeys = oMultiComboBox.getSelectedKeys();
             
-            console.log("✅ Selected " + aSelectedKeys.length + " ingredients");
             this.getView().getModel().setProperty("/newRecipe/selectedIngredientIds", aSelectedKeys);
         },
 
         onSaveNewRecipe: function () {
             var oModel = this.getView().getModel();
             var oNewRecipe = oModel.getProperty("/newRecipe");
+            
+            console.log("Creating recipe with data:", oNewRecipe);
             
             // Validate required fields
             if (!oNewRecipe.productName || oNewRecipe.productName.trim() === "") {
@@ -740,8 +685,6 @@ sap.ui.define([
                 MessageToast.show("⚠️ Please select a region");
                 return;
             }
-            
-            console.log("💾 Saving new recipe to recipe collection:", oNewRecipe);
             
             // Find region name
             var aCountries = oModel.getProperty("/countries");
@@ -761,16 +704,18 @@ sap.ui.define([
                 ver: 1
             };
             
-            console.log("📤 POST payload to recipe collection:", oPayload);
-            MessageToast.show("💾 Creating recipe...");
+            MessageToast.show("Creating recipe...");
             
             var oConfigModel = this.getOwnerComponent().getModel("config");
             var sPocketbaseURL = oConfigModel.getProperty("/pocketbaseURL");
             
-            // Authenticate first, then POST to NEW recipe collection
+            // Authenticate first, then POST recipe and ingredients
+            var sAuthToken;
+            var oCreatedRecipe;
+            
             this._authenticateAdmin()
                 .then(function(sToken) {
-                    console.log("🔐 Authenticated, now POSTing to recipe collection with admin token");
+                    sAuthToken = sToken;
                     
                     return jQuery.ajax({
                         url: sPocketbaseURL + "/api/collections/recipe/records",
@@ -783,8 +728,49 @@ sap.ui.define([
                     });
                 }.bind(this))
                 .then(function(oData) {
-                    console.log("✅ Recipe created successfully in recipe collection:", oData);
+                    oCreatedRecipe = oData;
+                    console.log("Recipe created:", oCreatedRecipe);
                     
+                    // Now save selected ingredients to recipeingredient collection
+                    if (!oNewRecipe.selectedIngredientIds || oNewRecipe.selectedIngredientIds.length === 0) {
+                        return Promise.resolve([]);
+                    }
+                    
+                    // Get ingredient details from availableIngredients
+                    var aAvailableIngredients = oModel.getProperty("/availableIngredients");
+                    
+                    // Create promises for each selected ingredient
+                    var aIngredientPromises = oNewRecipe.selectedIngredientIds.map(function(sIngredientId) {
+                        // Find ingredient details - selectedIngredientIds contains field_id values
+                        var oIngredient = aAvailableIngredients.find(function(ing) {
+                            return ing.field_id === sIngredientId || ing.INGREDIENT_ID === sIngredientId;
+                        });
+                        
+                        console.log("Creating ingredient link for:", sIngredientId, oIngredient);
+                        
+                        // Create ingredient record payload
+                        var oIngredientPayload = {
+                            recipe_fk: oCreatedRecipe.id,
+                            ingredient_fk: sIngredientId,
+                            originalingredient_fk: sIngredientId,
+                            quantity: 0,
+                            unit: "",
+                            isalternative: 0,
+                            functionalrole: ""
+                        };
+                        
+                        return jQuery.ajax({
+                            url: sPocketbaseURL + "/api/collections/recipeingredient/records",
+                            method: "POST",
+                            headers: { "Authorization": sAuthToken },
+                            contentType: "application/json",
+                            data: JSON.stringify(oIngredientPayload)
+                        });
+                    });
+                    
+                    return Promise.all(aIngredientPromises);
+                }.bind(this))
+                .then(function(aIngredientResults) {
                     // Close dialog
                     this._oCreateRecipeDialog.close();
                     
@@ -797,7 +783,13 @@ sap.ui.define([
                         recipeId: oNewRecipe.recipeId
                     });
                     
-                    MessageToast.show("✅ Recipe '" + oNewRecipe.productName + "' created successfully!");
+                    var sSuccessMsg = "✅ Recipe '" + oNewRecipe.productName + "' created";
+                    if (aIngredientResults && aIngredientResults.length > 0) {
+                        sSuccessMsg += " with " + aIngredientResults.length + " ingredients!";
+                    } else {
+                        sSuccessMsg += " successfully!";
+                    }
+                    MessageToast.show(sSuccessMsg);
                 }.bind(this))
                 .catch(function(error) {
                     console.error("❌ Failed to create recipe:", error);
@@ -810,7 +802,6 @@ sap.ui.define([
         },
 
         onCancelCreateRecipe: function () {
-            console.log("❌ Create recipe cancelled from ListReport");
             this._oCreateRecipeDialog.close();
         },
 
@@ -874,8 +865,6 @@ sap.ui.define([
             var oConfigModel = this.getOwnerComponent().getModel("config");
             var sPocketbaseURL = oConfigModel.getProperty("/pocketbaseURL");
             
-            console.log("🔢 Generating unique Recipe ID from recipe collection...");
-            
             // Use pagination to get ALL Recipe IDs from NEW recipe collection
             return this._fetchAllRecords(sPocketbaseURL, "/api/collections/recipe/records?fields=field_id")
                 .then(function(aAllItems) {
@@ -884,8 +873,6 @@ sap.ui.define([
                     }).filter(function(id) {
                         return id.startsWith("REC");
                     });
-                    
-                    console.log("📋 Found " + aExistingIds.length + " existing Recipe IDs in recipe collection");
                     
                     // Extract numeric suffixes and find max
                     var iMaxNumber = 0;
@@ -901,14 +888,12 @@ sap.ui.define([
                     var iNextNumber = iMaxNumber + 1;
                     var sNewRecipeId = "REC" + String(iNextNumber).padStart(3, "0");
                     
-                    console.log("✅ Generated unique Recipe ID:", sNewRecipeId);
                     return sNewRecipeId;
                 })
                 .catch(function(error) {
                     console.error("❌ Failed to fetch existing Recipe IDs:", error);
                     // Fallback to timestamp-based ID
                     var sFallbackId = "REC" + String(Date.now()).slice(-3);
-                    console.log("⚠️ Using fallback Recipe ID:", sFallbackId);
                     return sFallbackId;
                 });
         },
@@ -919,7 +904,6 @@ sap.ui.define([
             
             // If we already have a token, return it
             if (sAdminToken) {
-                console.log("✅ Using existing admin token");
                 return Promise.resolve(sAdminToken);
             }
             
@@ -927,8 +911,6 @@ sap.ui.define([
             var sPocketbaseURL = oConfigModel.getProperty("/pocketbaseURL");
             var sAdminEmail = oConfigModel.getProperty("/adminEmail");
             var sAdminPassword = oConfigModel.getProperty("/adminPassword");
-            
-            console.log("🔐 Authenticating as admin...");
             
             return new Promise(function(resolve, reject) {
                 jQuery.ajax({
@@ -940,7 +922,6 @@ sap.ui.define([
                         password: sAdminPassword
                     }),
                     success: function(oData) {
-                        console.log("✅ Admin authentication successful");
                         var sToken = oData.token;
                         
                         // Store token in config
